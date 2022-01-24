@@ -6,6 +6,14 @@ from pyspark import SparkContext, SparkConf
 from pyspark.sql import functions as F
 import sys
 
+
+# 保存到hdfs中
+def outputSave(df):
+    output_file = "hdfs://master:9000/user/ming1/kuaishou/hotSortByLike100"
+    df.coalesce(1).write.mode("append").options(header="true") \
+        .csv(output_file, sep=",")
+
+
 # sort by realLikeCount
 def sortByVideoLike(sc, spark):
     df = spark.read.option("header", "true")\
@@ -16,7 +24,8 @@ def sortByVideoLike(sc, spark):
     
     # distinct by title
     df = df.dropDuplicates(["title"])
-    df.filter( df.realLikeCount > 10000).show()
+    df = df.filter( df.realLikeCount > 10000).orderBy("realLikeCount", ascending=False).head(100)
+    outputSave(df)
 
 
 if __name__ == "__main__":

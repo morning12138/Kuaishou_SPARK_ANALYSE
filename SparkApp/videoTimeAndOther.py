@@ -9,8 +9,8 @@ reload(sys)
 sys.setdefaultencoding('utf-8')
 
 # 保存到hdfs中
-def outputSave(df, tag):
-    output_file = "hdfs://master:9000/user/ming1/kuaishou/tagAnalyse/" + tag[1:]
+def outputSave(df):
+    output_file = "hdfs://master:9000/user/ming1/kuaishou/hotVideoTimeAndOther"
     df.coalesce(1).write.mode("append").options(header="true") \
         .csv(output_file, sep=",")
 
@@ -20,12 +20,14 @@ def videoTimeAndLike(df):
     df = df.withColumn("duration",df.duration.astype("int"))
     df = df.withColumn("realLikeCount",df.realLikeCount.astype("int"))
 
-    print(df.corr("duration", "realLikeCount"))
+    # print(df.corr("duration", "realLikeCount"))
+    return df.corr("duration", "realLikeCount")
 
 
 # 分析视频时长和评论数的关系
 def videoTimeAndCommNum(df):
-    print(df.corr("totcomment", "duration"))
+    # print(df.corr("totcomment", "duration"))
+    return df.corr("totcomment", "duration")
 
 
 if __name__ == "__main__":
@@ -39,12 +41,17 @@ if __name__ == "__main__":
         .option("inferSchema", "true") \
         .option("delimiter", ",") \
         .option("encoding", "utf-8") \
-        .csv("hdfs://master:9000/user/ming1/kuaishou/result.csv")
+        .csv("hdfs://master:9000/user/ming1/kuaishou/热门短视频数据2w.csv")
     
         
     # exec functions
-    videoTimeAndLike(df)
-    videoTimeAndCommNum(df)
+    rel1 = videoTimeAndLike(df)
+    # rel2 = videoTimeAndCommNum(df)
+    dict = []
+    one = [rel1]
+    dict.append(one)
+    df_save = spark.createDataFrame(dict, ["covariance_videotime_like"])
+    outputSave(df_save)
 
 
 

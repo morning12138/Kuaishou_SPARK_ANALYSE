@@ -7,9 +7,11 @@ def open_file(url):
     with open(url, encoding="utf-8") as csv_file:
         last_title = ""
         for row in csv_file:
-            if len(row.split(sep=",")) <= 2:
+            # print(row)
+            if len(row.split(sep=",")) == 0:
                 continue
-            title = row.split(sep=",")[2]
+            title = row.split(sep=",")[0]
+
             if last_title != "" and title == last_title:
                 continue
             pattern = "#.+"
@@ -23,7 +25,8 @@ def open_file(url):
             last_title = title
         print("Over!")
 
-    tag_file = "../DataSet/tags.txt"
+    print(s)
+    tag_file = "../DataSet/hot_tag.txt"
     with open(tag_file, "w", encoding="utf-8") as f:
         f.write(s)
 
@@ -38,6 +41,7 @@ def open_file(url):
     with open(tag_file, "w", encoding="utf-8") as f:
         f.write(s)
 
+
 if __name__ == "__main__":
-    URL = "../DataSet/result.csv"
+    URL = "../DataSet/热门短视频数据2w.csv"
     open_file(URL)

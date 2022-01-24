@@ -28,21 +28,21 @@ if __name__ == "__main__":
     # init
     reload(sys)
     sys.setdefaultencoding('utf-8')
-    conf = SparkConf().setAppName("gameWordCount").setMaster("spark://master:7077")
+    conf = SparkConf().setAppName("hotWordCount").setMaster("spark://master:7077")
     sc = SparkContext(conf=conf)
     spark = SparkSession(sc)
     df = spark.read.option("header", "true") \
         .option("inferSchema", "true") \
         .option("delimiter", ",") \
         .option("encoding", "utf-8") \
-        .csv("hdfs://master:9000/user/ming1/kuaishou/游戏短视频数据(带评论).csv")
+        .csv("hdfs://master:9000/user/ming1/kuaishou/热门短视频数据2w.csv")
 
     # exec functions
 
-    words = sc.textFile("hdfs://master:9000/user/ming1/kuaishou/game_tag.txt")
+    words = sc.textFile("hdfs://master:9000/user/ming1/kuaishou/hot_tag.txt")
     words_arr = words.collect()
     dict = []
-    for word in words_arr:
+    for word in words_arr[5000:10000]:
         word = word[1:]
         df1 = getWord(df, word.encode('utf-8'))
         word_count = wordCount(df1)
@@ -50,5 +50,5 @@ if __name__ == "__main__":
         dict.append(one)
 
     word_count_df = spark.createDataFrame(dict, ["word", "wordCount"])
-    word_count_df.coalesce(1).write.mode("overwrite").options(header="true") \
-        .csv("hdfs://master:9000/user/ming1/kuaishou/gameWordCount/", sep=",")
+    word_count_df.coalesce(1).write.mode("append").options(header="true") \
+        .csv("hdfs://master:9000/user/ming1/kuaishou/hotWordCount/", sep=",")
